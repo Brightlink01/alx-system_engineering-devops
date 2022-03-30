@@ -1,1 +1,1 @@
-Bye bye betty
+Bye my firt directory
