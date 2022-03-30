@@ -1,1 +1,1 @@
-File type
+symbolic and inhabit
