@@ -1,62 +1,18 @@
 #!/usr/bin/env bash
-# install load balancer
+# Install your load balancer
+sudo apt-get -y update
+sudo apt-get -y install haproxy
+sudo chown  $USER:$USER /etc/haproxy/haproxy.cfg
 
-# colors
-blue='\e[1;34m'
-brown='\e[0;33m'
-green='\e[1;32m'
-reset='\033[0m'
-
-echo -e "${blue}Updating and doing some minor checks...${reset}\n"
-
-function install() {
-	command -v "$1" &> /dev/null
-
-	#shellcheck disable=SC2181
-	if [ $? -ne 0 ]; then
-		echo -e "	Installing: ${brown}$1${reset}\n"
-		sudo apt-get update -y -qq && \
-			sudo apt-get install -y "$1" -qq
-		echo -e "\n"
-	else
-		echo -e "	${green}${1} is already installed.${reset}\n"
-	fi
-}
-
-install haproxy #install haproxy
-
-echo -e "\n${blue}Setting up some minor stuff.${reset}\n"
-
-# backup default server config file
-sudo cp /etc/haproxy/haproxy.cfg haproxy_default.backup
-
-server_config=\
-"
-defaults
-  mode http
-  timeout client 15s
-  timeout connect 10s
-  timeout server 15s
-  timeout http-request 10s
-
-frontend jedidalx-tech-frontend
+echo "
+frontend anemdevop
     bind *:80
-    default_backend jedidalx-tech-backend
-
-backend jedidalx-tech-backend
+    mode http
+    default_backend app
+backend app
     balance roundrobin
-    server 30520-web-01 34.236.38.223:80 check
-    server 30520-web-02 100.26.158.42:80 check
-"
+    server 41172-web-01 3.238.99.231 check
+    server 41172-web-02  18.209.152.77 check" >> /etc/haproxy/haproxy.cfg
 
-# shellcheck disable=SC2154
-echo "$server_config" | sudo dd status=none of=/etc/haproxy/haproxy.cfg
+sudo service haproxy restart
 
-# enable haproxy to be started by init script
-echo "ENABLED=1" | sudo dd status=none of=/etc/default/haproxy
-
-if [ "$(pgrep -c haproxy)" -le 0 ]; then
-	sudo service haproxy start
-else
-	sudo service haproxy restart
-fi
