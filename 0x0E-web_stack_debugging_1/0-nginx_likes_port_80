@@ -3,3 +3,4 @@
 
 ln -s /etc/nginx/sites-available/dafult /etc/nginx/sites-enabled/default
 service nginx restart
+
